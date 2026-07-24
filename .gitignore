@@ -52,3 +52,19 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Generated download files (not for repo)
+/download/
+
+# Tool results (not for repo)
+/tool-results/
+
+# Work log (not for repo)
+/worklog.md
+
+# Scripts temp
+/scripts/
+
+# APK build temp files
+*.apk
+*.zip
