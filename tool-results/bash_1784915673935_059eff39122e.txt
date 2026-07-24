@@ -1,0 +1,477 @@
+Testing 69 models...
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+✅ WORKS: glm-4-flash - Hi there! 😊 How can I help yo
+✅ WORKS: glm-4-long - Hi there! How can I help you t
+❌ FAILS: glm-4-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4-flashx - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+❌ FAILS: glm-4-air - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4-airx - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4v - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4v-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4v-flash - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+❌ FAILS: glm-4v-flashx - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.1v-thinking-flash - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.5v-flash - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.5-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.5-flash - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+❌ FAILS: glm-4.5v-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.5v - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.6v-flash - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.6v-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.6v - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+❌ FAILS: glm-4.7-flash - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.7-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-4.7 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-5 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-5-flash - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+❌ FAILS: glm-5-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-5.1 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-5.1-flash - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-5.1-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-z1-flash - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+❌ FAILS: glm-z1-flashx - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-z1-air - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-z1-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-z1 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: glm-3-turbo - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+❌ FAILS: codegeex - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: codegeex-4 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: codegeex4-all - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: codegeex-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: deepseek-v3 - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+❌ FAILS: deepseek-r1 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: deepseek-chat - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: deepseek-coder - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: deepseek-v2 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: deepseek-v2.5 - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+❌ FAILS: deepseek-r1-distill-qwen - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: deepseek-r1-distill-llama - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: qwen-max - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: qwen-plus - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: qwen-turbo - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+❌ FAILS: qwen2.5-72b-instruct - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: qwen2-72b-instruct - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: qwen2.5-coder-32b-instruct - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: qwen2vl-72b-instruct - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: baichuan2-53b - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+❌ FAILS: baichuan2-13b - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: baichuan4 - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: yi-large - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: yi-spark - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: yi-lightning - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 4)
+    at async main ([eval]:59:26)
+❌ FAILS: yi-vision - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: minicpm-v - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: minicpm3-4b - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: internvl2-26b - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: internvl2-8b - API request failed with status 429: {"error":"Too many reque
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 3)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 2)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 1)
+    at async main ([eval]:59:26)
+Failed to make API request: Error: API request failed with status 429: {"error":"Too many requests, please try again later"}
+    at ZAI.createChatCompletion (file:///home/z/my-project/node_modules/z-ai-web-dev-sdk/dist/index.js:103:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async testModel ([eval]:36:22)
+    at async Promise.all (index 0)
+    at async main ([eval]:59:26)
+❌ FAILS: cogview - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: cogvideo - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: cogvideox - API request failed with status 429: {"error":"Too many reque
+❌ FAILS: emohaa - API request failed with status 429: {"error":"Too many reque
+
+=== SUMMARY ===
+Working models: 2
+Failed models: 67
+Working model IDs: glm-4-flash, glm-4-long

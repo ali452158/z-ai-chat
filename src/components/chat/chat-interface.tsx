@@ -77,6 +77,17 @@ const CATEGORY_LABELS: Record<string, string> = {
   thinking: 'تفكير',
   'image-gen': 'توليد صور',
   'video-gen': 'توليد فيديو',
+  multimodal: 'متعدد',
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  text: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  thinking: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+  vision: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
+  code: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+  'image-gen': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  'video-gen': 'bg-rose-500/10 text-rose-600 border-rose-500/20',
+  multimodal: 'bg-violet-500/10 text-violet-600 border-violet-500/20',
 }
 
 function extractCodeBlocks(content: string) {
@@ -268,7 +279,12 @@ export default function ChatInterface() {
 
         {/* Total models count */}
         <div className="p-4 border-t border-border text-xs text-muted-foreground">
-          {store.availableModels.length} نموذج مجاني متاح
+          <div className="flex flex-col gap-0.5">
+            <span>{store.availableModels.length} نموذج متاح</span>
+            {store.modelDiscoveryStats && (
+              <span className="text-muted-foreground">{store.modelDiscoveryStats.free} مجاني · {store.modelDiscoveryStats.openSource} مفتوح المصدر</span>
+            )}
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -305,16 +321,18 @@ export default function ChatInterface() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-3 max-h-[70vh] overflow-y-auto" align="start" side="bottom">
-              <div className="space-y-2">
+            <PopoverContent className="w-80 p-3 max-h-[75vh] overflow-y-auto" align="start" side="bottom">
+              <div className="space-y-3">
                 {/* Header with mode badge and refresh */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className={MODE_CONFIG[store.activeMode]?.color}>
                       {MODE_CONFIG[store.activeMode]?.icon}
                       {MODE_CONFIG[store.activeMode]?.label}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">{currentModeModels.length} نموذج متاح</span>
+                    <span className="text-xs text-muted-foreground">
+                      {currentModeModels.length} نموذج · {store.getFreeModelsForMode(store.activeMode).length} مجاني
+                    </span>
                   </div>
                   <Button
                     variant="ghost"
@@ -328,55 +346,110 @@ export default function ChatInterface() {
                   </Button>
                 </div>
 
-                {/* Models for this mode */}
-                {currentModeModels.map((model) => {
-                  const isRecommended = recommendedModel?.id === model.id
-                  const isSelected = model.id === store.activeModel
-                  return (
-                    <button
-                      key={model.id}
-                      className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-colors ${
-                        isSelected
-                          ? 'bg-primary/10 text-primary border border-primary/20'
-                          : 'hover:bg-accent text-foreground'
-                      }`}
-                      onClick={() => {
-                        store.setActiveModel(model.id)
-                        setModelPopoverOpen(false)
-                      }}
-                    >
-                      <span className="text-lg">{model.icon}</span>
-                      <div className="flex-1 text-right">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-sm">{model.name}</span>
-                          {isRecommended && (
-                            <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs px-1.5 py-0">
-                              <Sparkles className="h-3 w-3 ml-1" />
-                              موصى به
-                            </Badge>
-                          )}
-                          <Badge variant="outline" className="text-xs px-1 py-0">
-                            {CATEGORY_LABELS[model.category] || model.category}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{model.description}</p>
-                      </div>
-                      {isSelected && <Check className="h-4 w-4 text-primary" />}
-                    </button>
-                  )
-                })}
+                {/* FREE MODELS section */}
+                {store.getFreeModelsForMode(store.activeMode).length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
+                        مجاني
+                      </Badge>
+                    </div>
+                    {store.getFreeModelsForMode(store.activeMode).map((model) => {
+                      const isRecommended = recommendedModel?.id === model.id
+                      const isSelected = model.id === store.activeModel
+                      return (
+                        <button
+                          key={model.id}
+                          className={`w-full flex items-center gap-2.5 p-2 rounded-lg transition-colors ${
+                            isSelected
+                              ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                              : 'hover:bg-accent text-foreground'
+                          }`}
+                          onClick={() => {
+                            store.setActiveModel(model.id)
+                            setModelPopoverOpen(false)
+                          }}
+                        >
+                          <span className="text-base">{model.icon}</span>
+                          <div className="flex-1 text-right">
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium text-sm">{model.name}</span>
+                              {isRecommended && (
+                                <Sparkles className="h-3 w-3 text-amber-500" />
+                              )}
+                              {model.isOpenSource && (
+                                <Badge variant="outline" className="text-xs px-1 py-0 border-blue-500/20 text-blue-600">مفتوح</Badge>
+                              )}
+                              {model.contextLength && (
+                                <span className="text-xs text-muted-foreground">{model.contextLength}</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{model.description}</p>
+                          </div>
+                          {isSelected && <Check className="h-4 w-4 text-emerald-600" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
 
-                {/* All models section */}
-                <div className="border-t border-border pt-2 mt-2">
-                  <button
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-                    onClick={() => {
-                      setModelPopoverOpen(false)
-                    }}
-                  >
-                    جميع النماذج ({store.availableModels.length})
-                  </button>
-                </div>
+                {/* PREMIUM / OPEN-SOURCE section */}
+                {store.getPremiumModelsForMode(store.activeMode).length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Badge className="bg-violet-500/10 text-violet-600 border-violet-500/20 text-xs">
+                        ⭐ مفتوح المصدر وبريميوم
+                      </Badge>
+                    </div>
+                    {store.getPremiumModelsForMode(store.activeMode).map((model) => {
+                      const isSelected = model.id === store.activeModel
+                      return (
+                        <button
+                          key={model.id}
+                          className={`w-full flex items-center gap-2.5 p-2 rounded-lg transition-colors ${
+                            isSelected
+                              ? 'bg-primary/10 text-primary border border-primary/20'
+                              : 'hover:bg-accent text-foreground'
+                          }`}
+                          onClick={() => {
+                            store.setActiveModel(model.id)
+                            setModelPopoverOpen(false)
+                          }}
+                        >
+                          <span className="text-base">{model.icon}</span>
+                          <div className="flex-1 text-right">
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium text-sm">{model.name}</span>
+                              {model.isOpenSource && (
+                                <Badge variant="outline" className="text-xs px-1 py-0 border-blue-500/20 text-blue-600">MIT</Badge>
+                              )}
+                              <Badge variant="outline" className={`text-xs px-1 py-0 ${CATEGORY_COLORS[model.category] || ''}`}>
+                                {CATEGORY_LABELS[model.category] || model.category}
+                              </Badge>
+                              {model.contextLength && (
+                                <span className="text-xs text-muted-foreground">{model.contextLength}</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">{model.description}</p>
+                          </div>
+                          {isSelected && <Check className="h-4 w-4 text-primary" />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Discovery stats */}
+                {store.modelDiscoveryStats && (
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>بحث تلقائي: {store.modelDiscoveryStats.total} نموذج · {store.modelDiscoveryStats.free} مجاني · {store.modelDiscoveryStats.openSource} مفتوح</span>
+                      {store.modelsLastUpdated && (
+                        <span>↻ {new Date(store.modelsLastUpdated).toLocaleTimeString('ar')}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </PopoverContent>
           </Popover>
@@ -673,7 +746,7 @@ export default function ChatInterface() {
                     onClick={() => {
                       // Extract the URL or HTML from the conversation
                       const htmlContent = store.previewType === 'html' ? store.previewContent : ''
-                      store.buildApk('', htmlContent)
+                      store.buildApk('', htmlContent ?? '')
                     }}
                     disabled={store.apkBuilding}
                   >
