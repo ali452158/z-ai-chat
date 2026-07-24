@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useChatStore, ChatMode, AVAILABLE_MODELS, MODE_MODEL_MAP, MODE_AVAILABLE_MODELS } from '@/lib/store'
+import { useChatStore, ChatMode } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import {
   Popover,
@@ -30,6 +29,7 @@ import {
   PanelRightClose,
   Sparkles,
   Check,
+  RefreshCw,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -68,6 +68,15 @@ const MODE_CONFIG: Record<ChatMode, { label: string; icon: React.ReactNode; colo
   },
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  text: 'محادثة',
+  vision: 'بصري',
+  code: 'برمجة',
+  thinking: 'تفكير',
+  'image-gen': 'توليد صور',
+  'video-gen': 'توليد فيديو',
+}
+
 function extractCodeBlocks(content: string) {
   const regex = /```(\w+)?\n([\s\S]*?)```/g
   const blocks: { language: string; code: string }[] = []
@@ -87,21 +96,41 @@ export default function ChatInterface() {
   const [showPreview, setShowPreview] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const activeSession = store.sessions.find((s) => s.id === store.activeSessionId)
 
-  // Get models available for current mode
-  const currentModeModels = MODE_AVAILABLE_MODELS[store.activeMode]
-  const recommendedModel = MODE_MODEL_MAP[store.activeMode]
-  const currentModelInfo = AVAILABLE_MODELS.find(m => m.id === store.activeModel)
+  // Get models for current mode
+  const currentModeModels = store.getModelsForMode(store.activeMode)
+  const recommendedModel = store.getRecommendedModelForMode(store.activeMode)
+  const currentModelInfo = store.availableModels.find(m => m.id === store.activeModel)
+
+  // Fetch models on mount
+  useEffect(() => {
+    store.fetchModels()
+  }, [])
+
+  // Auto-refresh models every 30 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      store.fetchModels()
+    }, 1800000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [activeSession?.messages])
+
+  const handleRefreshModels = async () => {
+    setIsRefreshing(true)
+    await store.fetchModels()
+    setIsRefreshing(false)
+  }
 
   const handleSend = useCallback(async () => {
     if (!inputValue.trim() || store.isGenerating) return
@@ -116,6 +145,7 @@ export default function ChatInterface() {
       role: 'user' as const,
       content: inputValue.trim(),
       mode: store.activeMode,
+      model: store.activeModel,
       timestamp: new Date(),
     }
 
@@ -148,6 +178,7 @@ export default function ChatInterface() {
         role: 'assistant' as const,
         content: data.message,
         mode: store.activeMode,
+        model: store.activeModel,
         timestamp: new Date(),
         codeBlocks: extractCodeBlocks(data.message),
       }
@@ -169,6 +200,7 @@ export default function ChatInterface() {
         role: 'assistant' as const,
         content: 'حدث خطأ في الاتصال. حاول مرة أخرى.',
         mode: store.activeMode,
+        model: store.activeModel,
         timestamp: new Date(),
       }
       store.addMessage(errorMessage)
@@ -190,7 +222,6 @@ export default function ChatInterface() {
     <div className="h-screen flex bg-background overflow-hidden" dir="rtl">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 border-l border-border bg-card flex flex-col overflow-hidden`}>
-        {/* Sidebar Header */}
         <div className="p-4 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-foreground">المحادثات</h2>
           <Button
@@ -203,7 +234,6 @@ export default function ChatInterface() {
           </Button>
         </div>
 
-        {/* Session List */}
         <ScrollArea className="flex-1 px-2">
           <div className="space-y-1">
             {store.sessions.map((session) => (
@@ -233,6 +263,20 @@ export default function ChatInterface() {
             ))}
           </div>
         </ScrollArea>
+
+        {/* Total models count */}
+        <div className="p-4 border-t border-border text-xs text-muted-foreground">
+          {store.availableModels.length} نموذج مجاني متاح
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5 ml-1"
+            onClick={handleRefreshModels}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -248,41 +292,54 @@ export default function ChatInterface() {
             {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
           </Button>
 
-          {/* Interactive Model Selector in Top Bar */}
+          {/* Interactive Model Selector */}
           <Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs rounded-lg">
                 <span>{currentModelInfo?.icon}</span>
                 <span className="font-medium">{currentModelInfo?.name}</span>
-                {store.activeModel === recommendedModel && (
+                {recommendedModel && store.activeModel === recommendedModel.id && (
                   <Sparkles className="h-3 w-3 text-amber-500" />
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-3" align="start" side="bottom">
+            <PopoverContent className="w-80 p-3 max-h-[70vh] overflow-y-auto" align="start" side="bottom">
               <div className="space-y-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge variant="outline" className={MODE_CONFIG[store.activeMode]?.color}>
-                    {MODE_CONFIG[store.activeMode]?.icon}
-                    {MODE_CONFIG[store.activeMode]?.label}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">النماذج المتاحة لهذا الوضع</span>
+                {/* Header with mode badge and refresh */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className={MODE_CONFIG[store.activeMode]?.color}>
+                      {MODE_CONFIG[store.activeMode]?.icon}
+                      {MODE_CONFIG[store.activeMode]?.label}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">{currentModeModels.length} نموذج متاح</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={handleRefreshModels}
+                    disabled={isRefreshing}
+                    title="تحديث النماذج"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  </Button>
                 </div>
-                {currentModeModels.map((modelId) => {
-                  const model = AVAILABLE_MODELS.find(m => m.id === modelId)
-                  if (!model) return null
-                  const isRecommended = modelId === recommendedModel
-                  const isSelected = modelId === store.activeModel
+
+                {/* Models for this mode */}
+                {currentModeModels.map((model) => {
+                  const isRecommended = recommendedModel?.id === model.id
+                  const isSelected = model.id === store.activeModel
                   return (
                     <button
-                      key={modelId}
+                      key={model.id}
                       className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-colors ${
                         isSelected
                           ? 'bg-primary/10 text-primary border border-primary/20'
                           : 'hover:bg-accent text-foreground'
                       }`}
                       onClick={() => {
-                        store.setActiveModel(modelId)
+                        store.setActiveModel(model.id)
                         setModelPopoverOpen(false)
                       }}
                     >
@@ -296,6 +353,9 @@ export default function ChatInterface() {
                               موصى به
                             </Badge>
                           )}
+                          <Badge variant="outline" className="text-xs px-1 py-0">
+                            {CATEGORY_LABELS[model.category] || model.category}
+                          </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{model.description}</p>
                       </div>
@@ -303,6 +363,18 @@ export default function ChatInterface() {
                     </button>
                   )
                 })}
+
+                {/* All models section */}
+                <div className="border-t border-border pt-2 mt-2">
+                  <button
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                    onClick={() => {
+                      setModelPopoverOpen(false)
+                    }}
+                  >
+                    جميع النماذج ({store.availableModels.length})
+                  </button>
+                </div>
               </div>
             </PopoverContent>
           </Popover>
@@ -340,7 +412,6 @@ export default function ChatInterface() {
         <div className="flex-1 flex overflow-hidden">
           {/* Chat Area */}
           <div className="flex-1 flex flex-col min-w-0">
-            {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
               {!activeSession || activeSession.messages.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center gap-6">
@@ -352,12 +423,13 @@ export default function ChatInterface() {
                     <p className="text-sm text-muted-foreground max-w-md">
                       ابدأ محادثة جديدة باستخدام أحد الأوضاع المتاحة. اختر البرمجة أو الفيديو أو الصورة أو بناء التطبيقات أو تحويل URL.
                     </p>
+                    <p className="text-xs text-muted-foreground">
+                      {store.availableModels.length} نموذج مجاني متاح • يتم تحديث النماذج تلقائياً
+                    </p>
                   </div>
-                  {/* Quick Actions */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-lg">
                     {(Object.entries(MODE_CONFIG) as [ChatMode, typeof MODE_CONFIG[ChatMode]][]).map(([mode, config]) => {
-                      const modeRecommendedModel = MODE_MODEL_MAP[mode]
-                      const modeModelInfo = AVAILABLE_MODELS.find(m => m.id === modeRecommendedModel)
+                      const modeRecModel = store.getRecommendedModelForMode(mode)
                       return (
                         <Button
                           key={mode}
@@ -370,7 +442,7 @@ export default function ChatInterface() {
                           </div>
                           <span className="text-xs font-medium">{config.label}</span>
                           <span className="text-xs text-muted-foreground">
-                            {modeModelInfo?.icon} {modeModelInfo?.name}
+                            {modeRecModel?.icon} {modeRecModel?.name}
                           </span>
                         </Button>
                       )
@@ -383,16 +455,14 @@ export default function ChatInterface() {
                     key={msg.id}
                     className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                   >
-                    {/* Avatar */}
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                      msg.role === 'user' 
-                        ? 'bg-primary text-primary-foreground' 
+                      msg.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-accent text-accent-foreground'
                     }`}>
                       {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                     </div>
 
-                    {/* Message Content */}
                     <div className={`flex-1 max-w-[80%] space-y-2 ${
                       msg.role === 'user' ? 'text-left' : 'text-right'
                     }`}>
@@ -466,15 +536,6 @@ export default function ChatInterface() {
                                 li({ children }) {
                                   return <li className="text-sm">{children}</li>
                                 },
-                                h1({ children }) {
-                                  return <h1 className="text-lg font-bold mb-2">{children}</h1>
-                                },
-                                h2({ children }) {
-                                  return <h2 className="text-base font-bold mb-1.5">{children}</h2>
-                                },
-                                h3({ children }) {
-                                  return <h3 className="text-sm font-semibold mb-1">{children}</h3>
-                                },
                               }}
                             >
                               {msg.content}
@@ -487,11 +548,17 @@ export default function ChatInterface() {
 
                       {/* Mode + Model badge */}
                       {msg.role === 'assistant' && (
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-1.5 flex-wrap">
                           <Badge variant="outline" className={`text-xs ${MODE_CONFIG[msg.mode]?.color}`}>
                             {MODE_CONFIG[msg.mode]?.icon}
                             {MODE_CONFIG[msg.mode]?.label}
                           </Badge>
+                          {msg.model && (
+                            <Badge variant="outline" className="text-xs">
+                              {store.availableModels.find(m => m.id === msg.model)?.icon || '🤖'}
+                              {store.availableModels.find(m => m.id === msg.model)?.name || msg.model}
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </div>
@@ -499,7 +566,6 @@ export default function ChatInterface() {
                 ))
               )}
 
-              {/* Generating indicator */}
               {store.isGenerating && (
                 <div className="flex gap-3">
                   <div className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center shrink-0">
@@ -509,6 +575,9 @@ export default function ChatInterface() {
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
                       <span className="text-sm text-muted-foreground">جارٍ إنشاء الرد...</span>
+                      <Badge variant="outline" className="text-xs">
+                        {currentModelInfo?.icon} {currentModelInfo?.name}
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -518,7 +587,6 @@ export default function ChatInterface() {
             {/* Input Area */}
             <div className="border-t border-border p-4 bg-card">
               <div className="flex items-center gap-2">
-                {/* Mode + Model indicator */}
                 <Badge variant="outline" className={`${MODE_CONFIG[store.activeMode]?.color} text-xs hidden sm:flex`}>
                   {MODE_CONFIG[store.activeMode]?.icon}
                   {MODE_CONFIG[store.activeMode]?.label}
@@ -539,7 +607,7 @@ export default function ChatInterface() {
                         handleSend()
                       }
                     }}
-                    placeholder={`اكتب رسالتك... (${MODE_CONFIG[store.activeMode]?.label})`}
+                    placeholder={`اكتب رسالتك... (${MODE_CONFIG[store.activeMode]?.label} • ${currentModelInfo?.name})`}
                     className="h-10 pr-10 rounded-xl"
                     disabled={store.isGenerating}
                   />
@@ -563,7 +631,6 @@ export default function ChatInterface() {
           {/* Preview Panel */}
           {showPreview && (
             <div className="w-[45%] border-l border-border bg-card flex flex-col overflow-hidden">
-              {/* Preview Header */}
               <div className="h-13 border-b border-border flex items-center px-4 gap-2">
                 <Code2 className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-semibold text-foreground">لوحة المعاينة</span>
@@ -584,7 +651,6 @@ export default function ChatInterface() {
                 )}
               </div>
 
-              {/* Preview Content */}
               <div className="flex-1 overflow-y-auto">
                 {store.previewContent ? (
                   store.previewType === 'html' ? (
