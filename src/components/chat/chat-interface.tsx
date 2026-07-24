@@ -1,13 +1,17 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useChatStore, ChatMode, AVAILABLE_MODELS } from '@/lib/store'
+import { useChatStore, ChatMode, AVAILABLE_MODELS, MODE_MODEL_MAP, MODE_AVAILABLE_MODELS } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Code2,
   Video,
@@ -24,7 +28,8 @@ import {
   Loader2,
   PanelRightOpen,
   PanelRightClose,
-  Settings,
+  Sparkles,
+  Check,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -81,10 +86,16 @@ export default function ChatInterface() {
   const [inputValue, setInputValue] = useState('')
   const [showPreview, setShowPreview] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const activeSession = store.sessions.find((s) => s.id === store.activeSessionId)
+
+  // Get models available for current mode
+  const currentModeModels = MODE_AVAILABLE_MODELS[store.activeMode]
+  const recommendedModel = MODE_MODEL_MAP[store.activeMode]
+  const currentModelInfo = AVAILABLE_MODELS.find(m => m.id === store.activeModel)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -126,7 +137,7 @@ export default function ChatInterface() {
           message: inputValue.trim(),
           mode: store.activeMode,
           model: store.activeModel,
-          history: history.slice(-10), // Last 10 messages for context
+          history: history.slice(-10),
         }),
       })
 
@@ -143,7 +154,6 @@ export default function ChatInterface() {
 
       store.addMessage(assistantMessage)
 
-      // Update preview with code blocks
       const blocks = extractCodeBlocks(data.message)
       if (blocks.length > 0) {
         const firstBlock = blocks[0]
@@ -223,38 +233,12 @@ export default function ChatInterface() {
             ))}
           </div>
         </ScrollArea>
-
-        {/* Sidebar Footer - Model Selection */}
-        <div className="p-4 border-t border-border">
-          <label className="text-xs text-muted-foreground mb-1.5 block">النموذج</label>
-          <Select
-            value={store.activeModel}
-            onValueChange={store.setActiveModel}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {AVAILABLE_MODELS.map((model) => (
-                <SelectItem key={model.id} value={model.id}>
-                  <div className="flex items-center gap-2">
-                    <span>{model.icon}</span>
-                    <span className="font-medium">{model.name}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="mt-2 text-xs text-muted-foreground">
-            {AVAILABLE_MODELS.find(m => m.id === store.activeModel)?.description}
-          </div>
-        </div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <div className="h-13 border-b border-border flex items-center px-4 gap-3 bg-card">
+        <div className="h-13 border-b border-border flex items-center px-3 gap-2 bg-card">
           <Button
             variant="ghost"
             size="icon"
@@ -264,26 +248,79 @@ export default function ChatInterface() {
             {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
           </Button>
 
-          {/* Active Model Badge */}
-          <Badge variant="outline" className="text-xs">
-            {AVAILABLE_MODELS.find(m => m.id === store.activeModel)?.icon}
-            {AVAILABLE_MODELS.find(m => m.id === store.activeModel)?.name}
-          </Badge>
+          {/* Interactive Model Selector in Top Bar */}
+          <Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs rounded-lg">
+                <span>{currentModelInfo?.icon}</span>
+                <span className="font-medium">{currentModelInfo?.name}</span>
+                {store.activeModel === recommendedModel && (
+                  <Sparkles className="h-3 w-3 text-amber-500" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-3" align="start" side="bottom">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <Badge variant="outline" className={MODE_CONFIG[store.activeMode]?.color}>
+                    {MODE_CONFIG[store.activeMode]?.icon}
+                    {MODE_CONFIG[store.activeMode]?.label}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">النماذج المتاحة لهذا الوضع</span>
+                </div>
+                {currentModeModels.map((modelId) => {
+                  const model = AVAILABLE_MODELS.find(m => m.id === modelId)
+                  if (!model) return null
+                  const isRecommended = modelId === recommendedModel
+                  const isSelected = modelId === store.activeModel
+                  return (
+                    <button
+                      key={modelId}
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-colors ${
+                        isSelected
+                          ? 'bg-primary/10 text-primary border border-primary/20'
+                          : 'hover:bg-accent text-foreground'
+                      }`}
+                      onClick={() => {
+                        store.setActiveModel(modelId)
+                        setModelPopoverOpen(false)
+                      }}
+                    >
+                      <span className="text-lg">{model.icon}</span>
+                      <div className="flex-1 text-right">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-sm">{model.name}</span>
+                          {isRecommended && (
+                            <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs px-1.5 py-0">
+                              <Sparkles className="h-3 w-3 ml-1" />
+                              موصى به
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{model.description}</p>
+                      </div>
+                      {isSelected && <Check className="h-4 w-4 text-primary" />}
+                    </button>
+                  )
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
 
           {/* Mode Tabs */}
-          <div className="flex-1 flex items-center gap-2 overflow-x-auto">
+          <div className="flex-1 flex items-center gap-1 overflow-x-auto">
             {(Object.entries(MODE_CONFIG) as [ChatMode, typeof MODE_CONFIG[ChatMode]][]).map(([mode, config]) => (
               <Button
                 key={mode}
                 variant={store.activeMode === mode ? 'default' : 'ghost'}
                 size="sm"
-                className={`h-7 gap-1.5 text-xs ${
+                className={`h-7 gap-1 text-xs rounded-lg ${
                   store.activeMode === mode ? config.color : 'text-muted-foreground'
                 }`}
                 onClick={() => store.setActiveMode(mode)}
               >
                 {config.icon}
-                <span>{config.label}</span>
+                <span className="hidden sm:inline">{config.label}</span>
               </Button>
             ))}
           </div>
@@ -317,20 +354,27 @@ export default function ChatInterface() {
                     </p>
                   </div>
                   {/* Quick Actions */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-lg">
-                    {(Object.entries(MODE_CONFIG) as [ChatMode, typeof MODE_CONFIG[ChatMode]][]).map(([mode, config]) => (
-                      <Button
-                        key={mode}
-                        variant="outline"
-                        className={`h-auto p-3 gap-2 flex-col ${config.color}`}
-                        onClick={() => store.setActiveMode(mode)}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center">
-                          {config.icon}
-                        </div>
-                        <span className="text-xs font-medium">{config.label}</span>
-                      </Button>
-                    ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-lg">
+                    {(Object.entries(MODE_CONFIG) as [ChatMode, typeof MODE_CONFIG[ChatMode]][]).map(([mode, config]) => {
+                      const modeRecommendedModel = MODE_MODEL_MAP[mode]
+                      const modeModelInfo = AVAILABLE_MODELS.find(m => m.id === modeRecommendedModel)
+                      return (
+                        <Button
+                          key={mode}
+                          variant="outline"
+                          className={`h-auto p-3 gap-2 flex-col ${config.color}`}
+                          onClick={() => store.setActiveMode(mode)}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center">
+                            {config.icon}
+                          </div>
+                          <span className="text-xs font-medium">{config.label}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {modeModelInfo?.icon} {modeModelInfo?.name}
+                          </span>
+                        </Button>
+                      )
+                    })}
                   </div>
                 </div>
               ) : (
@@ -441,12 +485,14 @@ export default function ChatInterface() {
                         )}
                       </div>
 
-                      {/* Mode badge */}
+                      {/* Mode + Model badge */}
                       {msg.role === 'assistant' && (
-                        <Badge variant="outline" className={`text-xs ${MODE_CONFIG[msg.mode]?.color}`}>
-                          {MODE_CONFIG[msg.mode]?.icon}
-                          {MODE_CONFIG[msg.mode]?.label}
-                        </Badge>
+                        <div className="flex gap-1.5">
+                          <Badge variant="outline" className={`text-xs ${MODE_CONFIG[msg.mode]?.color}`}>
+                            {MODE_CONFIG[msg.mode]?.icon}
+                            {MODE_CONFIG[msg.mode]?.label}
+                          </Badge>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -472,10 +518,14 @@ export default function ChatInterface() {
             {/* Input Area */}
             <div className="border-t border-border p-4 bg-card">
               <div className="flex items-center gap-2">
-                {/* Mode indicator */}
+                {/* Mode + Model indicator */}
                 <Badge variant="outline" className={`${MODE_CONFIG[store.activeMode]?.color} text-xs hidden sm:flex`}>
                   {MODE_CONFIG[store.activeMode]?.icon}
                   {MODE_CONFIG[store.activeMode]?.label}
+                </Badge>
+                <Badge variant="outline" className="text-xs hidden sm:flex">
+                  {currentModelInfo?.icon}
+                  {currentModelInfo?.name}
                 </Badge>
 
                 <div className="flex-1 relative">

@@ -16,6 +16,24 @@ export const AVAILABLE_MODELS: ModelOption[] = [
   { id: 'glm-4-long', name: 'GLM-4-Long', description: 'نموذج للمحادثات الطويلة والتحليل العميق', icon: '📚' },
 ]
 
+// Recommended model per mode
+export const MODE_MODEL_MAP: Record<ChatMode, string> = {
+  programming: 'codegeex',
+  video: 'glm-4v',
+  image: 'glm-4v',
+  'app-building': 'glm-4',
+  'url-to-android': 'glm-4',
+}
+
+// Models available per mode
+export const MODE_AVAILABLE_MODELS: Record<ChatMode, string[]> = {
+  programming: ['codegeex', 'glm-4', 'glm-4-long'],
+  video: ['glm-4v', 'glm-4'],
+  image: ['glm-4v', 'glm-4'],
+  'app-building': ['glm-4', 'codegeex', 'glm-4-long'],
+  'url-to-android': ['glm-4', 'codegeex', 'glm-4-long'],
+}
+
 export type Message = {
   id: string
   role: 'user' | 'assistant'
@@ -69,7 +87,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
   previewLanguage: null,
   previewType: null,
 
-  setActiveMode: (mode) => set({ activeMode: mode }),
+  setActiveMode: (mode) => set({ 
+    activeMode: mode,
+    // Auto-switch to recommended model for the mode
+    activeModel: MODE_MODEL_MAP[mode],
+  }),
   setActiveModel: (model) => set({ activeModel: model }),
   
   createSession: () => {
