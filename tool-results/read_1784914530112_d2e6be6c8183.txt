@@ -1,0 +1,800 @@
+     1→     1→'use client'
+     2→     2→
+     3→     3→import { useState, useRef, useEffect, useCallback } from 'react'
+     4→     4→import { useChatStore, ChatMode } from '@/lib/store'
+     5→     5→import { Button } from '@/components/ui/button'
+     6→     6→import { Input } from '@/components/ui/input'
+     7→     7→import { ScrollArea } from '@/components/ui/scroll-area'
+     8→     8→import { Badge } from '@/components/ui/badge'
+     9→     9→import {
+    10→    10→  Popover,
+    11→    11→  PopoverContent,
+    12→    12→  PopoverTrigger,
+    13→    13→} from '@/components/ui/popover'
+    14→    14→import {
+    15→    15→  Code2,
+    16→    16→  Video,
+    17→    17→  ImageIcon,
+    18→    18→  Smartphone,
+    19→    19→  Link,
+    20→    20→  Send,
+    21→    21→  Square,
+    22→    22→  Trash2,
+    23→    23→  MessageSquare,
+    24→    24→  Plus,
+    25→    25→  Bot,
+    26→    26→  User,
+    27→    27→  Loader2,
+    28→    28→  PanelRightOpen,
+    29→    29→  PanelRightClose,
+    30→    30→  Sparkles,
+    31→    31→  Check,
+    32→    32→  RefreshCw,
+    33→    33→  Download,
+    34→    34→  Package,
+    35→    35→} from 'lucide-react'
+    36→    36→import ReactMarkdown from 'react-markdown'
+    37→    37→import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+    38→    38→import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+    39→    39→
+    40→    40→const MODE_CONFIG: Record<ChatMode, { label: string; icon: React.ReactNode; color: string; description: string }> = {
+    41→    41→  programming: {
+    42→    42→    label: 'برمجة',
+    43→    43→    icon: <Code2 className="h-4 w-4" />,
+    44→    44→    color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+    45→    45→    description: 'كتابة وتصحيح وتحسين الكود',
+    46→    46→  },
+    47→    47→  video: {
+    48→    48→    label: 'فيديو',
+    49→    49→    icon: <Video className="h-4 w-4" />,
+    50→    50→    color: 'bg-rose-500/10 text-rose-600 border-rose-500/20',
+    51→    51→    description: 'تحليل وإنتاج الفيديو',
+    52→    52→  },
+    53→    53→  image: {
+    54→    54→    label: 'صورة',
+    55→    55→    icon: <ImageIcon className="h-4 w-4" />,
+    56→    56→    color: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    57→    57→    description: 'توليد وتحليل الصور',
+    58→    58→  },
+    59→    59→  'app-building': {
+    60→    60→    label: 'بناء تطبيقات',
+    61→    61→    icon: <Smartphone className="h-4 w-4" />,
+    62→    62→    color: 'bg-violet-500/10 text-violet-600 border-violet-500/20',
+    63→    63→    description: 'تصميم وبناء تطبيقات كاملة',
+    64→    64→  },
+    65→    65→  'url-to-android': {
+    66→    66→    label: 'URL → Android',
+    67→    67→    icon: <Link className="h-4 w-4" />,
+    68→    68→    color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
+    69→    69→    description: 'تحويل URL إلى تطبيق Android',
+    70→    70→  },
+    71→    71→}
+    72→    72→
+    73→    73→const CATEGORY_LABELS: Record<string, string> = {
+    74→    74→  text: 'محادثة',
+    75→    75→  vision: 'بصري',
+    76→    76→  code: 'برمجة',
+    77→    77→  thinking: 'تفكير',
+    78→    78→  'image-gen': 'توليد صور',
+    79→    79→  'video-gen': 'توليد فيديو',
+    80→    80→}
+    81→    81→
+    82→    82→function extractCodeBlocks(content: string) {
+    83→    83→  const regex = /```(\w+)?\n([\s\S]*?)```/g
+    84→    84→  const blocks: { language: string; code: string }[] = []
+    85→    85→  let match
+    86→    86→  while ((match = regex.exec(content)) !== null) {
+    87→    87→    blocks.push({
+    88→    88→      language: match[1] || 'text',
+    89→    89→      code: match[2].trim(),
+    90→    90→    })
+    91→    91→  }
+    92→    92→  return blocks
+    93→    93→}
+    94→    94→
+    95→    95→export default function ChatInterface() {
+    96→    96→  const store = useChatStore()
+    97→    97→  const [inputValue, setInputValue] = useState('')
+    98→    98→  const [showPreview, setShowPreview] = useState(true)
+    99→    99→  const [sidebarOpen, setSidebarOpen] = useState(true)
+   100→   100→  const [modelPopoverOpen, setModelPopoverOpen] = useState(false)
+   101→   101→  const [isRefreshing, setIsRefreshing] = useState(false)
+   102→   102→  const inputRef = useRef<HTMLInputElement>(null)
+   103→   103→  const scrollRef = useRef<HTMLDivElement>(null)
+   104→   104→
+   105→   105→  const activeSession = store.sessions.find((s) => s.id === store.activeSessionId)
+   106→   106→
+   107→   107→  // Get models for current mode
+   108→   108→  const currentModeModels = store.getModelsForMode(store.activeMode)
+   109→   109→  const recommendedModel = store.getRecommendedModelForMode(store.activeMode)
+   110→   110→  const currentModelInfo = store.availableModels.find(m => m.id === store.activeModel)
+   111→   111→
+   112→   112→  // Fetch models on mount
+   113→   113→  useEffect(() => {
+   114→   114→    store.fetchModels()
+   115→   115→  }, [])
+   116→   116→
+   117→   117→  // Auto-refresh models every 30 minutes
+   118→   118→  useEffect(() => {
+   119→   119→    const interval = setInterval(() => {
+   120→   120→      store.fetchModels()
+   121→   121→    }, 1800000)
+   122→   122→    return () => clearInterval(interval)
+   123→   123→  }, [])
+   124→   124→
+   125→   125→  useEffect(() => {
+   126→   126→    if (scrollRef.current) {
+   127→   127→      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+   128→   128→    }
+   129→   129→  }, [activeSession?.messages])
+   130→   130→
+   131→   131→  const handleRefreshModels = async () => {
+   132→   132→    setIsRefreshing(true)
+   133→   133→    await store.fetchModels()
+   134→   134→    setIsRefreshing(false)
+   135→   135→  }
+   136→   136→
+   137→   137→  const handleSend = useCallback(async () => {
+   138→   138→    if (!inputValue.trim() || store.isGenerating) return
+   139→   139→
+   140→   140→    let sessionId = store.activeSessionId
+   141→   141→    if (!sessionId) {
+   142→   142→      sessionId = store.createSession()
+   143→   143→    }
+   144→   144→
+   145→   145→    const userMessage = {
+   146→   146→      id: `msg-${Date.now()}-user`,
+   147→   147→      role: 'user' as const,
+   148→   148→      content: inputValue.trim(),
+   149→   149→      mode: store.activeMode,
+   150→   150→      model: store.activeModel,
+   151→   151→      timestamp: new Date(),
+   152→   152→    }
+   153→   153→
+   154→   154→    store.addMessage(userMessage)
+   155→   155→    setInputValue('')
+   156→   156→    store.setIsGenerating(true)
+   157→   157→
+   158→   158→    const currentSession = store.sessions.find((s) => s.id === sessionId)
+   159→   159→    const history = currentSession?.messages.map((m) => ({
+   160→   160→      role: m.role,
+   161→   161→      content: m.content,
+   162→   162→    })) || []
+   163→   163→
+   164→   164→    try {
+   165→   165→      const response = await fetch('/api/chat', {
+   166→   166→        method: 'POST',
+   167→   167→        headers: { 'Content-Type': 'application/json' },
+   168→   168→        body: JSON.stringify({
+   169→   169→          message: inputValue.trim(),
+   170→   170→          mode: store.activeMode,
+   171→   171→          model: store.activeModel,
+   172→   172→          history: history.slice(-10),
+   173→   173→        }),
+   174→   174→      })
+   175→   175→
+   176→   176→      const data = await response.json()
+   177→   177→
+   178→   178→      const assistantMessage = {
+   179→   179→        id: `msg-${Date.now()}-assistant`,
+   180→   180→        role: 'assistant' as const,
+   181→   181→        content: data.message,
+   182→   182→        mode: store.activeMode,
+   183→   183→        model: store.activeModel,
+   184→   184→        timestamp: new Date(),
+   185→   185→        codeBlocks: extractCodeBlocks(data.message),
+   186→   186→      }
+   187→   187→
+   188→   188→      store.addMessage(assistantMessage)
+   189→   189→
+   190→   190→      const blocks = extractCodeBlocks(data.message)
+   191→   191→      if (blocks.length > 0) {
+   192→   192→        const firstBlock = blocks[0]
+   193→   193→        store.setPreviewContent(
+   194→   194→          firstBlock.code,
+   195→   195→          firstBlock.language,
+   196→   196→          firstBlock.language === 'html' ? 'html' : 'code'
+   197→   197→        )
+   198→   198→      }
+   199→   199→    } catch (err) {
+   200→   200→      const errorMessage = {
+   201→   201→        id: `msg-${Date.now()}-error`,
+   202→   202→        role: 'assistant' as const,
+   203→   203→        content: 'حدث خطأ في الاتصال. حاول مرة أخرى.',
+   204→   204→        mode: store.activeMode,
+   205→   205→        model: store.activeModel,
+   206→   206→        timestamp: new Date(),
+   207→   207→      }
+   208→   208→      store.addMessage(errorMessage)
+   209→   209→    } finally {
+   210→   210→      store.setIsGenerating(false)
+   211→   211→    }
+   212→   212→  }, [inputValue, store])
+   213→   213→
+   214→   214→  const handlePreviewCode = (code: string, language: string) => {
+   215→   215→    store.setPreviewContent(
+   216→   216→      code,
+   217→   217→      language,
+   218→   218→      language === 'html' ? 'html' : 'code'
+   219→   219→    )
+   220→   220→    setShowPreview(true)
+   221→   221→  }
+   222→   222→
+   223→   223→  return (
+   224→   224→    <div className="h-screen flex bg-background overflow-hidden" dir="rtl">
+   225→   225→      {/* Sidebar */}
+   226→   226→      <div className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 border-l border-border bg-card flex flex-col overflow-hidden`}>
+   227→   227→        <div className="p-4 flex items-center justify-between">
+   228→   228→          <h2 className="text-sm font-semibold text-foreground">المحادثات</h2>
+   229→   229→          <Button
+   230→   230→            variant="ghost"
+   231→   231→            size="icon"
+   232→   232→            className="h-7 w-7"
+   233→   233→            onClick={() => store.createSession()}
+   234→   234→          >
+   235→   235→            <Plus className="h-4 w-4" />
+   236→   236→          </Button>
+   237→   237→        </div>
+   238→   238→
+   239→   239→        <ScrollArea className="flex-1 px-2">
+   240→   240→          <div className="space-y-1">
+   241→   241→            {store.sessions.map((session) => (
+   242→   242→              <div
+   243→   243→                key={session.id}
+   244→   244→                className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+   245→   245→                  store.activeSessionId === session.id
+   246→   246→                    ? 'bg-accent text-accent-foreground'
+   247→   247→                    : 'hover:bg-accent/50 text-muted-foreground'
+   248→   248→                }`}
+   249→   249→                onClick={() => store.setActiveSession(session.id)}
+   250→   250→              >
+   251→   251→                <MessageSquare className="h-4 w-4 shrink-0" />
+   252→   252→                <span className="text-sm truncate flex-1">{session.title}</span>
+   253→   253→                <Button
+   254→   254→                  variant="ghost"
+   255→   255→                  size="icon"
+   256→   256→                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+   257→   257→                  onClick={(e) => {
+   258→   258→                    e.stopPropagation()
+   259→   259→                    store.deleteSession(session.id)
+   260→   260→                  }}
+   261→   261→                >
+   262→   262→                  <Trash2 className="h-3 w-3" />
+   263→   263→                </Button>
+   264→   264→              </div>
+   265→   265→            ))}
+   266→   266→          </div>
+   267→   267→        </ScrollArea>
+   268→   268→
+   269→   269→        {/* Total models count */}
+   270→   270→        <div className="p-4 border-t border-border text-xs text-muted-foreground">
+   271→   271→          {store.availableModels.length} نموذج مجاني متاح
+   272→   272→          <Button
+   273→   273→            variant="ghost"
+   274→   274→            size="icon"
+   275→   275→            className="h-5 w-5 ml-1"
+   276→   276→            onClick={handleRefreshModels}
+   277→   277→            disabled={isRefreshing}
+   278→   278→          >
+   279→   279→            <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+   280→   280→          </Button>
+   281→   281→        </div>
+   282→   282→      </div>
+   283→   283→
+   284→   284→      {/* Main Content Area */}
+   285→   285→      <div className="flex-1 flex flex-col min-w-0">
+   286→   286→        {/* Top Bar */}
+   287→   287→        <div className="h-13 border-b border-border flex items-center px-3 gap-2 bg-card">
+   288→   288→          <Button
+   289→   289→            variant="ghost"
+   290→   290→            size="icon"
+   291→   291→            className="h-8 w-8"
+   292→   292→            onClick={() => setSidebarOpen(!sidebarOpen)}
+   293→   293→          >
+   294→   294→            {sidebarOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+   295→   295→          </Button>
+   296→   296→
+   297→   297→          {/* Interactive Model Selector */}
+   298→   298→          <Popover open={modelPopoverOpen} onOpenChange={setModelPopoverOpen}>
+   299→   299→            <PopoverTrigger asChild>
+   300→   300→              <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs rounded-lg">
+   301→   301→                <span>{currentModelInfo?.icon}</span>
+   302→   302→                <span className="font-medium">{currentModelInfo?.name}</span>
+   303→   303→                {recommendedModel && store.activeModel === recommendedModel.id && (
+   304→   304→                  <Sparkles className="h-3 w-3 text-amber-500" />
+   305→   305→                )}
+   306→   306→              </Button>
+   307→   307→            </PopoverTrigger>
+   308→   308→            <PopoverContent className="w-80 p-3 max-h-[70vh] overflow-y-auto" align="start" side="bottom">
+   309→   309→              <div className="space-y-2">
+   310→   310→                {/* Header with mode badge and refresh */}
+   311→   311→                <div className="flex items-center justify-between mb-3">
+   312→   312→                  <div className="flex items-center gap-2">
+   313→   313→                    <Badge variant="outline" className={MODE_CONFIG[store.activeMode]?.color}>
+   314→   314→                      {MODE_CONFIG[store.activeMode]?.icon}
+   315→   315→                      {MODE_CONFIG[store.activeMode]?.label}
+   316→   316→                    </Badge>
+   317→   317→                    <span className="text-xs text-muted-foreground">{currentModeModels.length} نموذج متاح</span>
+   318→   318→                  </div>
+   319→   319→                  <Button
+   320→   320→                    variant="ghost"
+   321→   321→                    size="icon"
+   322→   322→                    className="h-6 w-6"
+   323→   323→                    onClick={handleRefreshModels}
+   324→   324→                    disabled={isRefreshing}
+   325→   325→                    title="تحديث النماذج"
+   326→   326→                  >
+   327→   327→                    <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+   328→   328→                  </Button>
+   329→   329→                </div>
+   330→   330→
+   331→   331→                {/* Models for this mode */}
+   332→   332→                {currentModeModels.map((model) => {
+   333→   333→                  const isRecommended = recommendedModel?.id === model.id
+   334→   334→                  const isSelected = model.id === store.activeModel
+   335→   335→                  return (
+   336→   336→                    <button
+   337→   337→                      key={model.id}
+   338→   338→                      className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-colors ${
+   339→   339→                        isSelected
+   340→   340→                          ? 'bg-primary/10 text-primary border border-primary/20'
+   341→   341→                          : 'hover:bg-accent text-foreground'
+   342→   342→                      }`}
+   343→   343→                      onClick={() => {
+   344→   344→                        store.setActiveModel(model.id)
+   345→   345→                        setModelPopoverOpen(false)
+   346→   346→                      }}
+   347→   347→                    >
+   348→   348→                      <span className="text-lg">{model.icon}</span>
+   349→   349→                      <div className="flex-1 text-right">
+   350→   350→                        <div className="flex items-center gap-1.5">
+   351→   351→                          <span className="font-medium text-sm">{model.name}</span>
+   352→   352→                          {isRecommended && (
+   353→   353→                            <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs px-1.5 py-0">
+   354→   354→                              <Sparkles className="h-3 w-3 ml-1" />
+   355→   355→                              موصى به
+   356→   356→                            </Badge>
+   357→   357→                          )}
+   358→   358→                          <Badge variant="outline" className="text-xs px-1 py-0">
+   359→   359→                            {CATEGORY_LABELS[model.category] || model.category}
+   360→   360→                          </Badge>
+   361→   361→                        </div>
+   362→   362→                        <p className="text-xs text-muted-foreground mt-0.5">{model.description}</p>
+   363→   363→                      </div>
+   364→   364→                      {isSelected && <Check className="h-4 w-4 text-primary" />}
+   365→   365→                    </button>
+   366→   366→                  )
+   367→   367→                })}
+   368→   368→
+   369→   369→                {/* All models section */}
+   370→   370→                <div className="border-t border-border pt-2 mt-2">
+   371→   371→                  <button
+   372→   372→                    className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+   373→   373→                    onClick={() => {
+   374→   374→                      setModelPopoverOpen(false)
+   375→   375→                    }}
+   376→   376→                  >
+   377→   377→                    جميع النماذج ({store.availableModels.length})
+   378→   378→                  </button>
+   379→   379→                </div>
+   380→   380→              </div>
+   381→   381→            </PopoverContent>
+   382→   382→          </Popover>
+   383→   383→
+   384→   384→          {/* Mode Tabs */}
+   385→   385→          <div className="flex-1 flex items-center gap-1 overflow-x-auto">
+   386→   386→            {(Object.entries(MODE_CONFIG) as [ChatMode, typeof MODE_CONFIG[ChatMode]][]).map(([mode, config]) => (
+   387→   387→              <Button
+   388→   388→                key={mode}
+   389→   389→                variant={store.activeMode === mode ? 'default' : 'ghost'}
+   390→   390→                size="sm"
+   391→   391→                className={`h-7 gap-1 text-xs rounded-lg ${
+   392→   392→                  store.activeMode === mode ? config.color : 'text-muted-foreground'
+   393→   393→                }`}
+   394→   394→                onClick={() => store.setActiveMode(mode)}
+   395→   395→              >
+   396→   396→                {config.icon}
+   397→   397→                <span className="hidden sm:inline">{config.label}</span>
+   398→   398→              </Button>
+   399→   399→            ))}
+   400→   400→          </div>
+   401→   401→
+   402→   402→          {/* Preview Toggle */}
+   403→   403→          <Button
+   404→   404→            variant="ghost"
+   405→   405→            size="icon"
+   406→   406→            className="h-8 w-8"
+   407→   407→            onClick={() => setShowPreview(!showPreview)}
+   408→   408→          >
+   409→   409→            {showPreview ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
+   410→   410→          </Button>
+   411→   411→        </div>
+   412→   412→
+   413→   413→        {/* Content Area: Chat + Preview */}
+   414→   414→        <div className="flex-1 flex overflow-hidden">
+   415→   415→          {/* Chat Area */}
+   416→   416→          <div className="flex-1 flex flex-col min-w-0">
+   417→   417→            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+   418→   418→              {!activeSession || activeSession.messages.length === 0 ? (
+   419→   419→                <div className="h-full flex flex-col items-center justify-center gap-6">
+   420→   420→                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+   421→   421→                    <Bot className="h-10 w-10 text-primary" />
+   422→   422→                  </div>
+   423→   423→                  <div className="text-center space-y-2">
+   424→   424→                    <h2 className="text-xl font-semibold text-foreground">مساعد Z.ai الذكي</h2>
+   425→   425→                    <p className="text-sm text-muted-foreground max-w-md">
+   426→   426→                      ابدأ محادثة جديدة باستخدام أحد الأوضاع المتاحة. اختر البرمجة أو الفيديو أو الصورة أو بناء التطبيقات أو تحويل URL.
+   427→   427→                    </p>
+   428→   428→                    <p className="text-xs text-muted-foreground">
+   429→   429→                      {store.availableModels.length} نموذج مجاني متاح • يتم تحديث النماذج تلقائياً
+   430→   430→                    </p>
+   431→   431→                  </div>
+   432→   432→                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-lg">
+   433→   433→                    {(Object.entries(MODE_CONFIG) as [ChatMode, typeof MODE_CONFIG[ChatMode]][]).map(([mode, config]) => {
+   434→   434→                      const modeRecModel = store.getRecommendedModelForMode(mode)
+   435→   435→                      return (
+   436→   436→                        <Button
+   437→   437→                          key={mode}
+   438→   438→                          variant="outline"
+   439→   439→                          className={`h-auto p-3 gap-2 flex-col ${config.color}`}
+   440→   440→                          onClick={() => store.setActiveMode(mode)}
+   441→   441→                        >
+   442→   442→                          <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center">
+   443→   443→                            {config.icon}
+   444→   444→                          </div>
+   445→   445→                          <span className="text-xs font-medium">{config.label}</span>
+   446→   446→                          <span className="text-xs text-muted-foreground">
+   447→   447→                            {modeRecModel?.icon} {modeRecModel?.name}
+   448→   448→                          </span>
+   449→   449→                        </Button>
+   450→   450→                      )
+   451→   451→                    })}
+   452→   452→                  </div>
+   453→   453→                </div>
+   454→   454→              ) : (
+   455→   455→                activeSession.messages.map((msg) => (
+   456→   456→                  <div
+   457→   457→                    key={msg.id}
+   458→   458→                    className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+   459→   459→                  >
+   460→   460→                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+   461→   461→                      msg.role === 'user'
+   462→   462→                        ? 'bg-primary text-primary-foreground'
+   463→   463→                        : 'bg-accent text-accent-foreground'
+   464→   464→                    }`}>
+   465→   465→                      {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+   466→   466→                    </div>
+   467→   467→
+   468→   468→                    <div className={`flex-1 max-w-[80%] space-y-2 ${
+   469→   469→                      msg.role === 'user' ? 'text-left' : 'text-right'
+   470→   470→                    }`}>
+   471→   471→                      <div className={`rounded-2xl px-4 py-3 ${
+   472→   472→                        msg.role === 'user'
+   473→   473→                          ? 'bg-primary text-primary-foreground'
+   474→   474→                          : 'bg-card border border-border text-card-foreground'
+   475→   475→                      }`}>
+   476→   476→                        {msg.role === 'assistant' ? (
+   477→   477→                          <div className="markdown-content text-sm leading-relaxed">
+   478→   478→                            <ReactMarkdown
+   479→   479→                              components={{
+   480→   480→                                code({ className, children, ...props }) {
+   481→   481→                                  const match = /language-(\w+)/.exec(className || '')
+   482→   482→                                  const codeString = String(children).replace(/\n$/, '')
+   483→   483→                                  if (match) {
+   484→   484→                                    return (
+   485→   485→                                      <div className="relative group my-3">
+   486→   486→                                        <div className="flex items-center justify-between px-4 py-1.5 bg-muted rounded-t-lg text-xs text-muted-foreground">
+   487→   487→                                          <span>{match[1]}</span>
+   488→   488→                                          <div className="flex gap-1">
+   489→   489→                                            <Button
+   490→   490→                                              variant="ghost"
+   491→   491→                                              size="icon"
+   492→   492→                                              className="h-5 w-5"
+   493→   493→                                              onClick={() => handlePreviewCode(codeString, match[1])}
+   494→   494→                                            >
+   495→   495→                                              <PanelRightOpen className="h-3 w-3" />
+   496→   496→                                            </Button>
+   497→   497→                                            <Button
+   498→   498→                                              variant="ghost"
+   499→   499→                                              size="icon"
+   500→   500→                                              className="h-5 w-5"
+   501→   501→                                              onClick={() => navigator.clipboard.writeText(codeString)}
+   502→   502→                                            >
+   503→   503→                                              <Code2 className="h-3 w-3" />
+   504→   504→                                            </Button>
+   505→   505→                                          </div>
+   506→   506→                                        </div>
+   507→   507→                                        <SyntaxHighlighter
+   508→   508→                                          style={oneDark}
+   509→   509→                                          language={match[1]}
+   510→   510→                                          PreTag="div"
+   511→   511→                                          customStyle={{
+   512→   512→                                            margin: 0,
+   513→   513→                                            borderRadius: '0 0 0.5rem 0.5rem',
+   514→   514→                                            fontSize: '13px',
+   515→   515→                                          }}
+   516→   516→                                          {...props}
+   517→   517→                                        >
+   518→   518→                                          {codeString}
+   519→   519→                                        </SyntaxHighlighter>
+   520→   520→                                      </div>
+   521→   521→                                    )
+   522→   522→                                  }
+   523→   523→                                  return (
+   524→   524→                                    <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+   525→   525→                                      {children}
+   526→   526→                                    </code>
+   527→   527→                                  )
+   528→   528→                                },
+   529→   529→                                p({ children }) {
+   530→   530→                                  return <p className="mb-2 last:mb-0">{children}</p>
+   531→   531→                                },
+   532→   532→                                ul({ children }) {
+   533→   533→                                  return <ul className="list-disc mb-2 space-y-1">{children}</ul>
+   534→   534→                                },
+   535→   535→                                ol({ children }) {
+   536→   536→                                  return <ol className="list-decimal mb-2 space-y-1">{children}</ol>
+   537→   537→                                },
+   538→   538→                                li({ children }) {
+   539→   539→                                  return <li className="text-sm">{children}</li>
+   540→   540→                                },
+   541→   541→                              }}
+   542→   542→                            >
+   543→   543→                              {msg.content}
+   544→   544→                            </ReactMarkdown>
+   545→   545→                          </div>
+   546→   546→                        ) : (
+   547→   547→                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+   548→   548→                        )}
+   549→   549→                      </div>
+   550→   550→
+   551→   551→                      {/* Mode + Model badge */}
+   552→   552→                      {msg.role === 'assistant' && (
+   553→   553→                        <div className="flex gap-1.5 flex-wrap">
+   554→   554→                          <Badge variant="outline" className={`text-xs ${MODE_CONFIG[msg.mode]?.color}`}>
+   555→   555→                            {MODE_CONFIG[msg.mode]?.icon}
+   556→   556→                            {MODE_CONFIG[msg.mode]?.label}
+   557→   557→                          </Badge>
+   558→   558→                          {msg.model && (
+   559→   559→                            <Badge variant="outline" className="text-xs">
+   560→   560→                              {store.availableModels.find(m => m.id === msg.model)?.icon || '🤖'}
+   561→   561→                              {store.availableModels.find(m => m.id === msg.model)?.name || msg.model}
+   562→   562→                            </Badge>
+   563→   563→                          )}
+   564→   564→                        </div>
+   565→   565→                      )}
+   566→   566→                    </div>
+   567→   567→                  </div>
+   568→   568→                ))
+   569→   569→              )}
+   570→   570→
+   571→   571→              {store.isGenerating && (
+   572→   572→                <div className="flex gap-3">
+   573→   573→                  <div className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center shrink-0">
+   574→   574→                    <Bot className="h-4 w-4" />
+   575→   575→                  </div>
+   576→   576→                  <div className="bg-card border border-border rounded-2xl px-4 py-3">
+   577→   577→                    <div className="flex items-center gap-2">
+   578→   578→                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+   579→   579→                      <span className="text-sm text-muted-foreground">جارٍ إنشاء الرد...</span>
+   580→   580→                      <Badge variant="outline" className="text-xs">
+   581→   581→                        {currentModelInfo?.icon} {currentModelInfo?.name}
+   582→   582→                      </Badge>
+   583→   583→                    </div>
+   584→   584→                  </div>
+   585→   585→                </div>
+   586→   586→              )}
+   587→   587→            </div>
+   588→   588→
+   589→   589→            {/* APK Build Result */}
+   590→   590→            {store.apkBuild && (
+   591→   591→              <div className="border-t border-border bg-card">
+   592→   592→                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+   593→   593→                  <div className="flex items-center gap-2 mb-2">
+   594→   594→                    <Smartphone className="h-5 w-5 text-emerald-600" />
+   595→   595→                    <span className="text-sm font-semibold text-emerald-700">مشروع Android تم بناؤه!</span>
+   596→   596→                  </div>
+   597→   597→                  <div className="text-xs text-muted-foreground space-y-1">
+   598→   598→                    <p>اسم التطبيق: <span className="font-medium text-foreground">{store.apkBuild.appName}</span></p>
+   599→   599→                    <p>الحزمة: <span className="font-medium text-foreground">{store.apkBuild.packageName}</span></p>
+   600→   600→                    <p>عدد الملفات: <span className="font-medium text-foreground">{store.apkBuild.totalFiles}</span></p>
+   601→   601→                  </div>
+   602→   602→                  <div className="flex gap-2 mt-3">
+   603→   603→                    <Button
+   604→   604→                      size="sm"
+   605→   605→                      className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+   606→   606→                      onClick={() => {
+   607→   607→                        window.open(store.apkBuild!.downloadPath, '_blank')
+   608→   608→                      }}
+   609→   609→                    >
+   610→   610→                      <Download className="h-4 w-4" />
+   611→   611→                      تحميل مشروع Android (ZIP)
+   612→   612→                    </Button>
+   613→   613→                    <Button
+   614→   614→                      variant="outline"
+   615→   615→                      size="sm"
+   616→   616→                      className="h-8 gap-1.5"
+   617→   617→                      onClick={() => store.clearApkBuild()}
+   618→   618→                    >
+   619→   619→                      إغلاق
+   620→   620→                    </Button>
+   621→   621→                  </div>
+   622→   622→                  <div className="mt-3 text-xs text-muted-foreground border-t border-emerald-500/20 pt-2">
+   623→   623→                    <p className="font-medium mb-1">خطوات بناء APK:</p>
+   624→   624→                    <ol className="list-decimal space-y-0.5 pr-4">
+   625→   625→                      {Object.values(store.apkBuild.buildInstructions).map((step, i) => (
+   626→   626→                        <li key={i}>{step}</li>
+   627→   627→                      ))}
+   628→   628→                    </ol>
+   629→   629→                  </div>
+   630→   630→                </div>
+   631→   631→              </div>
+   632→   632→            )}
+   633→   633→
+   634→   634→            {/* Input Area */}
+   635→   635→            <div className="border-t border-border p-4 bg-card">
+   636→   636→              {/* URL input for URL→Android mode */}
+   637→   637→              {(store.activeMode === 'url-to-android') && !store.apkBuild && (
+   638→   638→                <div className="mb-2 flex gap-2">
+   639→   639→                  <Input
+   640→   640→                    placeholder="أدخل URL الموقع (مثال: https://example.com)"
+   641→   641→                    className="h-9 rounded-lg text-sm"
+   642→   642→                    id="url-input"
+   643→   643→                    defaultValue=""
+   644→   644→                  />
+   645→   645→                  <Button
+   646→   646→                    size="sm"
+   647→   647→                    className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+   648→   648→                    onClick={() => {
+   649→   649→                      const urlInput = document.getElementById('url-input') as HTMLInputElement
+   650→   650→                      const url = urlInput?.value?.trim()
+   651→   651→                      if (url) {
+   652→   652→                        store.buildApk(url)
+   653→   653→                      }
+   654→   654→                    }}
+   655→   655→                    disabled={store.apkBuilding}
+   656→   656→                  >
+   657→   657→                    {store.apkBuilding ? (
+   658→   658→                      <Loader2 className="h-4 w-4 animate-spin" />
+   659→   659→                    ) : (
+   660→   660→                      <Smartphone className="h-4 w-4" />
+   661→   661→                    )}
+   662→   662→                    {store.apkBuilding ? 'جارٍ البناء...' : 'بناء APK'}
+   663→   663→                  </Button>
+   664→   664→                </div>
+   665→   665→              )}
+   666→   666→
+   667→   667→              {/* Build APK button for app-building mode */}
+   668→   668→              {(store.activeMode === 'app-building') && activeSession && activeSession.messages.length > 0 && store.previewContent && !store.apkBuild && (
+   669→   669→                <div className="mb-2 flex gap-2">
+   670→   670→                  <Button
+   671→   671→                    size="sm"
+   672→   672→                    className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+   673→   673→                    onClick={() => {
+   674→   674→                      // Extract the URL or HTML from the conversation
+   675→   675→                      const htmlContent = store.previewType === 'html' ? store.previewContent : ''
+   676→   676→                      store.buildApk('', htmlContent)
+   677→   677→                    }}
+   678→   678→                    disabled={store.apkBuilding}
+   679→   679→                  >
+   680→   680→                    {store.apkBuilding ? (
+   681→   681→                      <Loader2 className="h-4 w-4 animate-spin" />
+   682→   682→                    ) : (
+   683→   683→                      <Smartphone className="h-4 w-4" />
+   684→   684→                    )}
+   685→   685→                    {store.apkBuilding ? 'جارٍ البناء...' : 'تحويل إلى تطبيق Android'}
+   686→   686→                  </Button>
+   687→   687→                </div>
+   688→   688→              )}
+   689→   689→
+   690→   690→              <div className="flex items-center gap-2">
+   691→   691→                <Badge variant="outline" className={`${MODE_CONFIG[store.activeMode]?.color} text-xs hidden sm:flex`}>
+   692→   692→                  {MODE_CONFIG[store.activeMode]?.icon}
+   693→   693→                  {MODE_CONFIG[store.activeMode]?.label}
+   694→   694→                </Badge>
+   695→   695→                <Badge variant="outline" className="text-xs hidden sm:flex">
+   696→   696→                  {currentModelInfo?.icon}
+   697→   697→                  {currentModelInfo?.name}
+   698→   698→                </Badge>
+   699→   699→
+   700→   700→                <div className="flex-1 relative">
+   701→   701→                  <Input
+   702→   702→                    ref={inputRef}
+   703→   703→                    value={inputValue}
+   704→   704→                    onChange={(e) => setInputValue(e.target.value)}
+   705→   705→                    onKeyDown={(e) => {
+   706→   706→                      if (e.key === 'Enter' && !e.shiftKey) {
+   707→   707→                        e.preventDefault()
+   708→   708→                        handleSend()
+   709→   709→                      }
+   710→   710→                    }}
+   711→   711→                    placeholder={store.activeMode === 'url-to-android' 
+   712→   712→                      ? 'أدخل URL أو صف كود HTML للتطبيق...'
+   713→   713→                      : `اكتب رسالتك... (${MODE_CONFIG[store.activeMode]?.label} • ${currentModelInfo?.name})`}
+   714→   714→                    className="h-10 pr-10 rounded-xl"
+   715→   715→                    disabled={store.isGenerating}
+   716→   716→                  />
+   717→   717→                </div>
+   718→   718→
+   719→   719→                <Button
+   720→   720→                  onClick={handleSend}
+   721→   721→                  disabled={!inputValue.trim() || store.isGenerating}
+   722→   722→                  className="h-10 rounded-xl gap-1.5"
+   723→   723→                >
+   724→   724→                  {store.isGenerating ? (
+   725→   725→                    <Square className="h-4 w-4" />
+   726→   726→                  ) : (
+   727→   727→                    <Send className="h-4 w-4" />
+   728→   728→                  )}
+   729→   729→                </Button>
+   730→   730→              </div>
+   731→   731→            </div>
+   732→   732→          </div>
+   733→   733→
+   734→   734→          {/* Preview Panel */}
+   735→   735→          {showPreview && (
+   736→   736→            <div className="w-[45%] border-l border-border bg-card flex flex-col overflow-hidden">
+   737→   737→              <div className="h-13 border-b border-border flex items-center px-4 gap-2">
+   738→   738→                <Code2 className="h-4 w-4 text-muted-foreground" />
+   739→   739→                <span className="text-sm font-semibold text-foreground">لوحة المعاينة</span>
+   740→   740→                {store.previewLanguage && (
+   741→   741→                  <Badge variant="outline" className="text-xs">
+   742→   742→                    {store.previewLanguage}
+   743→   743→                  </Badge>
+   744→   744→                )}
+   745→   745→                {store.previewContent && (
+   746→   746→                  <Button
+   747→   747→                    variant="ghost"
+   748→   748→                    size="sm"
+   749→   749→                    className="h-6 text-xs ml-auto"
+   750→   750→                    onClick={() => navigator.clipboard.writeText(store.previewContent || '')}
+   751→   751→                  >
+   752→   752→                    نسخ الكود
+   753→   753→                  </Button>
+   754→   754→                )}
+   755→   755→              </div>
+   756→   756→
+   757→   757→              <div className="flex-1 overflow-y-auto">
+   758→   758→                {store.previewContent ? (
+   759→   759→                  store.previewType === 'html' ? (
+   760→   760→                    <iframe
+   761→   761→                      srcDoc={store.previewContent}
+   762→   762→                      className="w-full h-full bg-white"
+   763→   763→                      sandbox="allow-scripts allow-same-origin"
+   764→   764→                      title="HTML Preview"
+   765→   765→                    />
+   766→   766→                  ) : (
+   767→   767→                    <SyntaxHighlighter
+   768→   768→                      language={store.previewLanguage || 'text'}
+   769→   769→                      style={oneDark}
+   770→   770→                      showLineNumbers
+   771→   771→                      customStyle={{
+   772→   772→                        margin: 0,
+   773→   773→                        borderRadius: 0,
+   774→   774→                        fontSize: '13px',
+   775→   775→                        minHeight: '100%',
+   776→   776→                      }}
+   777→   777→                    >
+   778→   778→                      {store.previewContent}
+   779→   779→                    </SyntaxHighlighter>
+   780→   780→                  )
+   781→   781→                ) : (
+   782→   782→                  <div className="h-full flex flex-col items-center justify-center gap-4 p-8">
+   783→   783→                    <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
+   784→   784→                      <Code2 className="h-8 w-8 text-muted-foreground" />
+   785→   785→                    </div>
+   786→   786→                    <div className="text-center space-y-1">
+   787→   787→                      <p className="text-sm text-muted-foreground">لا يوجد كود للمعاينة</p>
+   788→   788→                      <p className="text-xs text-muted-foreground">اضغط على زر المعاينة في أي كود لعرضه هنا</p>
+   789→   789→                    </div>
+   790→   790→                  </div>
+   791→   791→                )}
+   792→   792→              </div>
+   793→   793→            </div>
+   794→   794→          )}
+   795→   795→        </div>
+   796→   796→      </div>
+   797→   797→    </div>
+   798→   798→  )
+   799→   799→}
+   800→   800→
