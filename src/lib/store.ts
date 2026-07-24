@@ -53,6 +53,17 @@ export type ChatSession = {
   createdAt: Date
 }
 
+export type ApkBuildResult = {
+  success: boolean
+  appName: string
+  packageName: string
+  zipFileName: string
+  downloadPath: string
+  projectFiles: string[]
+  totalFiles: number
+  buildInstructions: Record<string, string>
+}
+
 interface ChatState {
   sessions: ChatSession[]
   activeSessionId: string | null
@@ -64,6 +75,8 @@ interface ChatState {
   previewType: 'code' | 'image' | 'html' | null
   availableModels: ModelOption[]
   modelsLoaded: boolean
+  apkBuild: ApkBuildResult | null
+  apkBuilding: boolean
 
   // Actions
   setActiveMode: (mode: ChatMode) => void
@@ -79,6 +92,8 @@ interface ChatState {
   fetchModels: () => Promise<void>
   getModelsForMode: (mode: ChatMode) => ModelOption[]
   getRecommendedModelForMode: (mode: ChatMode) => ModelOption | undefined
+  buildApk: (url?: string, localHtml?: string, appName?: string) => Promise<void>
+  clearApkBuild: () => void
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -92,6 +107,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   previewType: null,
   availableModels: DEFAULT_MODELS,
   modelsLoaded: false,
+  apkBuild: null,
+  apkBuilding: false,
 
   setActiveMode: (mode) => {
     const state = get()
@@ -201,7 +218,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
   getRecommendedModelForMode: (mode) => {
     const state = get()
     const modeModels = state.getModelsForMode(mode)
-    // Prefer models with recommended category match
     const preferredCategory = mode === 'programming' ? ['code', 'thinking', 'text'] :
       mode === 'video' || mode === 'image' ? ['vision'] :
       ['text', 'thinking']
@@ -212,4 +228,31 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
     return modeModels[0]
   },
+
+  buildApk: async (url, localHtml, appName) => {
+    set({ apkBuilding: true, apkBuild: null })
+    try {
+      const response = await fetch('/api/build-apk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: url || '',
+          localHtml: localHtml || '',
+          appName: appName || '',
+          mode: get().activeMode,
+        }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        set({ apkBuild: data, apkBuilding: false })
+      } else {
+        set({ apkBuilding: false })
+      }
+    } catch (err) {
+      console.error('Build APK error:', err)
+      set({ apkBuilding: false })
+    }
+  },
+
+  clearApkBuild: () => set({ apkBuild: null, apkBuilding: false }),
 }))

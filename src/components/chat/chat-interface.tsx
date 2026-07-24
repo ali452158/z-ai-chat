@@ -30,6 +30,8 @@ import {
   Sparkles,
   Check,
   RefreshCw,
+  Download,
+  Package,
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -584,8 +586,107 @@ export default function ChatInterface() {
               )}
             </div>
 
+            {/* APK Build Result */}
+            {store.apkBuild && (
+              <div className="border-t border-border bg-card">
+                <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Smartphone className="h-5 w-5 text-emerald-600" />
+                    <span className="text-sm font-semibold text-emerald-700">مشروع Android تم بناؤه!</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p>اسم التطبيق: <span className="font-medium text-foreground">{store.apkBuild.appName}</span></p>
+                    <p>الحزمة: <span className="font-medium text-foreground">{store.apkBuild.packageName}</span></p>
+                    <p>عدد الملفات: <span className="font-medium text-foreground">{store.apkBuild.totalFiles}</span></p>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      size="sm"
+                      className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      onClick={() => {
+                        window.open(store.apkBuild!.downloadPath, '_blank')
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                      تحميل مشروع Android (ZIP)
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5"
+                      onClick={() => store.clearApkBuild()}
+                    >
+                      إغلاق
+                    </Button>
+                  </div>
+                  <div className="mt-3 text-xs text-muted-foreground border-t border-emerald-500/20 pt-2">
+                    <p className="font-medium mb-1">خطوات بناء APK:</p>
+                    <ol className="list-decimal space-y-0.5 pr-4">
+                      {Object.values(store.apkBuild.buildInstructions).map((step, i) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Input Area */}
             <div className="border-t border-border p-4 bg-card">
+              {/* URL input for URL→Android mode */}
+              {(store.activeMode === 'url-to-android') && !store.apkBuild && (
+                <div className="mb-2 flex gap-2">
+                  <Input
+                    placeholder="أدخل URL الموقع (مثال: https://example.com)"
+                    className="h-9 rounded-lg text-sm"
+                    id="url-input"
+                    defaultValue=""
+                  />
+                  <Button
+                    size="sm"
+                    className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                    onClick={() => {
+                      const urlInput = document.getElementById('url-input') as HTMLInputElement
+                      const url = urlInput?.value?.trim()
+                      if (url) {
+                        store.buildApk(url)
+                      }
+                    }}
+                    disabled={store.apkBuilding}
+                  >
+                    {store.apkBuilding ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Smartphone className="h-4 w-4" />
+                    )}
+                    {store.apkBuilding ? 'جارٍ البناء...' : 'بناء APK'}
+                  </Button>
+                </div>
+              )}
+
+              {/* Build APK button for app-building mode */}
+              {(store.activeMode === 'app-building') && activeSession && activeSession.messages.length > 0 && store.previewContent && !store.apkBuild && (
+                <div className="mb-2 flex gap-2">
+                  <Button
+                    size="sm"
+                    className="h-9 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                    onClick={() => {
+                      // Extract the URL or HTML from the conversation
+                      const htmlContent = store.previewType === 'html' ? store.previewContent : ''
+                      store.buildApk('', htmlContent)
+                    }}
+                    disabled={store.apkBuilding}
+                  >
+                    {store.apkBuilding ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Smartphone className="h-4 w-4" />
+                    )}
+                    {store.apkBuilding ? 'جارٍ البناء...' : 'تحويل إلى تطبيق Android'}
+                  </Button>
+                </div>
+              )}
+
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={`${MODE_CONFIG[store.activeMode]?.color} text-xs hidden sm:flex`}>
                   {MODE_CONFIG[store.activeMode]?.icon}
@@ -607,7 +708,9 @@ export default function ChatInterface() {
                         handleSend()
                       }
                     }}
-                    placeholder={`اكتب رسالتك... (${MODE_CONFIG[store.activeMode]?.label} • ${currentModelInfo?.name})`}
+                    placeholder={store.activeMode === 'url-to-android' 
+                      ? 'أدخل URL أو صف كود HTML للتطبيق...'
+                      : `اكتب رسالتك... (${MODE_CONFIG[store.activeMode]?.label} • ${currentModelInfo?.name})`}
                     className="h-10 pr-10 rounded-xl"
                     disabled={store.isGenerating}
                   />
