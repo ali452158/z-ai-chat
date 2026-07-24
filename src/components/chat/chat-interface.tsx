@@ -677,7 +677,14 @@ export default function ChatInterface() {
                       size="sm"
                       className="h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
                       onClick={() => {
-                        window.open(store.apkBuild!.downloadPath, '_blank')
+                        // Use the API download endpoint instead of direct file path
+                        const downloadUrl = `/api/download?file=${encodeURIComponent(store.apkBuild!.zipFileName)}`
+                        const link = document.createElement('a')
+                        link.href = downloadUrl
+                        link.download = store.apkBuild!.zipFileName
+                        document.body.appendChild(link)
+                        link.click()
+                        document.body.removeChild(link)
                       }}
                     >
                       <Download className="h-4 w-4" />
